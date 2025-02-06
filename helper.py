@@ -1,5 +1,6 @@
 
 from urlextract import URLExtract
+from wordcloud import WordCloud
 
 extract = URLExtract()
 def fetch_stats(selected_user , df):
@@ -23,7 +24,17 @@ def fetch_stats(selected_user , df):
 
 def most_busy_users(df):
     x= df['user'].value_counts().head()
-    percent = round(df['user'].value_count()/df.shape[0])*100,2).reset_indec()
-    return x
+    y = round((df['user'].value_counts()/df.shape[0])*100,2).reset_index()
+    return x , y
+
+def create_word_cloud(selected_user,df):
+    if(selected_user!='Overall'):
+        df = df[df['user']==selected_user]
+    
+    wc = WordCloud(width=500, height=500 , min_font_size=10 , background_color = 'white')
+    df_wc = wc.generate(df['message'].str.cat(sep=" "))
+    return df_wc
+
+
 
 
