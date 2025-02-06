@@ -25,6 +25,8 @@ def preprocess(data):
 
     df['user'] = users
     df['message'] = messages
+    df['message'] = df['message'].str.replace('\u200e', '', regex=True)
+    df['message'] = df['message'].str.strip() 
     df.drop(columns=['user_message'] , inplace =True)
     df['year'] = df['date'].dt.year
     df['month'] = df['date'].dt.month_name()
