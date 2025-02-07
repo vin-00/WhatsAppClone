@@ -2,7 +2,9 @@ import streamlit as st
 import preprocessor , helper
 import matplotlib.pyplot as plt
 import seaborn as sns
-from wordcloud import WordCloud
+from collections import Counter
+
+import random
 
 st.sidebar.title("Whatsapp Chat Analyzer")
 uploaded_file = st.sidebar.file_uploader("Choose a file")
@@ -221,7 +223,7 @@ if uploaded_file is not None :
         # Styling the graph 
         fig.patch.set_facecolor("#0E1117")  # Set entire figure background to black
         ax.set_facecolor("#0E1117")
-        sns.barplot(y=most_common_df[0],x=most_common_df[1], ax=ax,palette='viridis')
+        sns.barplot(y=most_common_df[0],x=most_common_df[1],hue=most_common_df[0], ax=ax,palette='viridis',legend=False)
 
         ax.set_xlabel("")
         ax.set_ylabel("")
@@ -241,18 +243,39 @@ if uploaded_file is not None :
         emoji_df = helper.emoji_helper(selected_user,df)
         st.title("Emoji Analysis")
         
-        col1 , col2 = st.columns(2)
+        # col1 , col2 = st.columns(2)
 
-        with col1 :
+        # with col1 :
             
-            colors = sns.color_palette("magma", len(emoji_df))
-            fig, ax = plt.subplots(facecolor="#0E1117")
-            fig.patch.set_facecolor("#0E1117")
-            ax.set_facecolor("#0E1117")
-            ax.pie(emoji_df[1],labels =emoji_df[0],autopct="%0.2f", startangle=140 ,colors = colors ,textprops={"color":"white"})
-            st.pyplot(fig)
+        #     colors = sns.color_palette("magma", len(emoji_df))
+        #     fig, ax = plt.subplots(facecolor="#0E1117")
+        #     fig.patch.set_facecolor("#0E1117")
+        #     ax.set_facecolor("#0E1117")
+        #     ax.pie(emoji_df[1],labels =emoji_df[0],autopct="%0.2f", startangle=140 ,colors = colors ,textprops={"color":"white"})
+        #     st.pyplot(fig)
 
-        with col2 :
-            st.dataframe(emoji_df)
+        # with col2 :
+        #     st.dataframe(emoji_df)
+        
+        
 
+        if(len(emoji_df)==0):
+            st.title("No emojis present")
+        
+        else:
+            size = 150  
+            st.title("These are the most used emojis:")
+
+            emoji_html = "<div style='white-space: nowrap;'>"
+            rank =1
+            for _, row in emoji_df.iterrows():
+                emoji_html += f'<span style="font-size:{size}px; margin-right: 10px;">{rank}.{row[0]}</span>'
+                size-=30
+                rank+=1
+                if(size==0):
+                    break
+            emoji_html += "</div>"
+
+            st.markdown(emoji_html, unsafe_allow_html=True)
+            
 
