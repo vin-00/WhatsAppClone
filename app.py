@@ -226,7 +226,7 @@ if uploaded_file is not None :
         ax.set_xlabel("")
         ax.set_ylabel("")
         plt.xticks(rotation='vertical')
-        ax.tick_params(colors="white")  r
+        ax.tick_params(colors="white")  
         ax.xaxis.label.set_color("white")  # X-axis label color
         ax.yaxis.label.set_color("white")  # Y-axis label color
         ax.spines["bottom"].set_color("white")  
