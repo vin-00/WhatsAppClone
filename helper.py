@@ -1,6 +1,9 @@
 
 from urlextract import URLExtract
 from wordcloud import WordCloud
+import pandas as pd
+from collections import Counter
+import emoji
 
 extract = URLExtract()
 def fetch_stats(selected_user , df):
@@ -14,8 +17,7 @@ def fetch_stats(selected_user , df):
         words.extend(message.split())
 
     # Media
-    media = df[(df['message']=='image omitted' )| (df['message']=='video omitted') | (df['message']=='GIF omitted') | (df['message']=='audio omitted') ].shape[0]
-    
+    media = df[df['message'].str.contains("omitted", case=False, na=False)].shape[0] # It checks for image , audio , video , document , sticker and GIF .
     # Links
     links = []
     for message in df['message']:
@@ -24,7 +26,8 @@ def fetch_stats(selected_user , df):
 
 def most_busy_users(df):
     x= df['user'].value_counts().head()
-    y = round((df['user'].value_counts()/df.shape[0])*100,2).reset_index()
+    y = round((df['user'].value_counts()/df.shape[0])*100,2).reset_index().head()
+
     return x , y
 
 def create_word_cloud(selected_user,df):
@@ -32,9 +35,84 @@ def create_word_cloud(selected_user,df):
         df = df[df['user']==selected_user]
     
     wc = WordCloud(width=500, height=500 , min_font_size=10 , background_color = 'white')
+    df = df[~df['message'].str.contains("omitted", case=False, na=False)]
+
+    f = open("stop_hinglish.txt","r")
+    stop = f.read()
+
+    def remove_stop_words(message):
+        y = []
+        for word in message.lower().split() :
+            if word not in stop:
+                y.append(word)
+        return " ".join(y)
+
+    df['message'].apply(remove_stop_words)
     df_wc = wc.generate(df['message'].str.cat(sep=" "))
     return df_wc
 
+def most_common_words(selected_user , df):
+    if(selected_user!='Overall'):
+        df = df[df['user']==selected_user]
+    
+    f = open('stop_hinglish.txt','r')
+    stop_words = f.read()
+    words = []
+    df = df[~df['message'].str.contains("omitted", case=False, na=False)]
+    for message in df['message']:
+        for word in message.lower().split():
+            if word not in stop_words:
+                words.append(word)
+    most_used = pd.DataFrame(Counter(words).most_common(20))
+    
+    return most_used
 
+def emoji_helper(selected_user,df):
+    if(selected_user!='Overall'):
+        df = df[df['user'] == selected_user]
 
+    emojis = []
+    excluded_emojis = {"🥲" ,'🥹','🥹🥹'} 
+    def is_valid_emoji(c):
+        return emoji.is_emoji(c) and c not in excluded_emojis and "\\U" not in repr(c)
 
+    for message in df['message']:
+        emojis.extend([c for c in message if is_valid_emoji(c)])
+    
+    return pd.DataFrame(Counter(emojis).most_common(10))
+
+def monthly_timeline(selected_user,df):
+    if(selected_user!='Overall'):
+        df = df[df['user']==selected_user]
+    
+    df['only_date'] = df['date'].dt.date
+    timeline = df.groupby(['year','month']).count()['message'].reset_index()
+    daily = df.groupby('only_date').count()['message'].reset_index()
+    time=[]
+    for i in range(len(timeline)):
+        time.append(timeline['month'][i]+"-"+str(timeline['year'][i]))
+    timeline['time'] =time
+
+    return timeline ,daily
+
+def day_activity(selected_user,df):
+    if(selected_user!='Overall'):
+        df = df[df['user']==selected_user]
+    
+    days = df['day_name'].value_counts()
+    return days
+
+def month_activity(selected_user,df):
+    if(selected_user!='Overall'):
+        df = df[df['user']==selected_user]
+    
+    months = df['month'].value_counts()
+    return months
+
+def activity_heatmap(selected_user,df):
+    if(selected_user!='Overall'):
+        df = df[df['user']==selected_user]
+
+    pivot_table = df.pivot_table(index='day_name',columns='period',values='message',aggfunc='count').fillna(0)
+
+    return pivot_table
