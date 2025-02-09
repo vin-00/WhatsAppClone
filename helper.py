@@ -22,7 +22,20 @@ def fetch_stats(selected_user , df):
     links = []
     for message in df['message']:
         links.extend(extract.find_urls(message))
-    return num_messages , len(words) ,media , len(links)
+    
+    # Deleted Messages
+    deleted = df[(df['message'].str.contains("message was deleted", case=False, na=False)) | (df['message'].str.contains("You deleted this message", case=False, na=False))].shape[0]
+
+    # Longest message
+    longest_msg = 0;
+    for msg in  df['message']:
+        # removing white spaces
+        msg = msg.strip()  
+        msg = " ".join(msg.split())
+        if(len(msg)>longest_msg):
+            longest_msg = len(msg)
+
+    return num_messages , len(words) ,media , len(links) , deleted ,longest_msg
 
 def most_busy_users(df):
     x= df['user'].value_counts().head()
@@ -85,7 +98,6 @@ def monthly_timeline(selected_user,df):
     if(selected_user!='Overall'):
         df = df[df['user']==selected_user]
     
-    df['only_date'] = df['date'].dt.date
     timeline = df.groupby(['year','month']).count()['message'].reset_index()
     daily = df.groupby('only_date').count()['message'].reset_index()
     time=[]
@@ -116,3 +128,30 @@ def activity_heatmap(selected_user,df):
     pivot_table = df.pivot_table(index='day_name',columns='period',values='message',aggfunc='count').fillna(0)
 
     return pivot_table
+
+def get_streak(selected_user,df):
+    if(selected_user!='Overall'):
+        df = df[df['user']==selected_user]
+    
+    user_max_streaks = {}  
+
+    for user in df["user"].unique():
+        user_df = df[df["user"] == user]  
+        user_df = user_df.sort_values(by=["date"],ascending=False)
+        user_df["diff"] = user_df["date"].diff().dt.days
+        max_streak = 0
+        current_streak = 0
+        user_df = user_df.drop_duplicates("only_date")
+        for diff in user_df["diff"]:
+            if diff == -1:  
+                current_streak += 1
+            else:  
+                current_streak = 1  
+            
+            max_streak = max(max_streak, current_streak)  
+        
+        user_max_streaks[user] = max_streak  
+
+    max_streak_df = pd.DataFrame(user_max_streaks.items(), columns=["user", "max_streak"]).reset_index()
+    max_streak_df.sort_values(by=['max_streak'],ascending=False, inplace=True)
+    return max_streak_df.head()

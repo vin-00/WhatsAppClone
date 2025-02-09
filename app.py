@@ -31,10 +31,10 @@ if uploaded_file is not None :
     selected_user = st.sidebar.selectbox("Show Analysis wrt",user_list)
 
     if st.sidebar.button("Show Analysis"):
-        
+
         st.title("Top Statistics")
-        num_messages , word ,media ,links= helper.fetch_stats(selected_user, df)
-        col1 , col2 , col3 ,col4 = st.columns(4)
+        num_messages , word ,media ,links , deleted , longest_msg= helper.fetch_stats(selected_user, df)
+        col1 , col2 , col3 = st.columns(3)
         with col1 :    
             st.header("Total Messages")
             st.title(num_messages)
@@ -46,10 +46,54 @@ if uploaded_file is not None :
         with col3 :    
             st.header("Media Shared")
             st.title(media)
-        with col4 :    
+
+        col1 ,col2,col3 = st.columns(3)
+        with col1 :    
             st.header("Links Shared")
             st.title(links)
+        with col2 :
+            st.header("Messages Deleted")
+            st.title(deleted)
+        with col3 :
+            st.header("Longest Message")
+            st.title(longest_msg)
+
+
+        # Longest Streak
+        st.title("Longest Streak")
+        max_streaks = helper.get_streak(selected_user,df)
+
+        max_streak_value = max_streaks["max_streak"].max()
+        for _, row in max_streaks.iterrows():
+            user = row["user"]
+            streak = row["max_streak"]
+            normalized_width = (streak / max_streak_value) * 100
+            
+            st.header(user+" :  "+str(streak)+" days")
+            st.markdown(
+                f"""
+                <div style="
+                    width: {normalized_width}%;
+                    background-color: #e0e0e0;
+                    border-radius: 10px;
+                    height: 20px;
+                    position: relative;
+                    margin-bottom: 25px;
+                ">
+                    <div style="
+                        width: 100%;
+                        background: linear-gradient(90deg, #FF5733, #FF8D1A);
+                        height: 100%;
+                        border-radius: 10px;
+                    "></div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+
         
+
         # Timeline
 
         col1  ,col2 = st.columns(2)
@@ -143,10 +187,10 @@ if uploaded_file is not None :
 
             st.pyplot(fig)
 
-        #  Busiest users 
+        #  Active users 
         if(selected_user=='Overall'):
             
-            st.title("Most Busy Users")
+            st.title("Most Active Users")
             x , y= helper.most_busy_users(df)
             
             

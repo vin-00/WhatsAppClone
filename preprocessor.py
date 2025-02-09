@@ -34,7 +34,7 @@ def preprocess(data):
     df['hour'] = df['date'].dt.hour
     df['minute'] = df['date'].dt.minute
     df['day_name'] = df.date.dt.day_name()
-    
+    df['only_date'] = df['date'].dt.date
     period =[]
     for hour in df[['day_name','hour']]['hour']:
         if hour==23:
