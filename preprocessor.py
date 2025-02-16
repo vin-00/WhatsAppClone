@@ -1,15 +1,30 @@
 import re
 import pandas as pd
 
-def preprocess(data):
+def preprocess(data ):
+
+    type= 'Android'
+    if(data.startswith("[")):
+        type = 'IOS'
+    
     pattern = r"\[\d{1,2}/\d{1,2}/\d{2},\s\d{1,2}:\d{2}:\d{2}\s(?:AM|PM)\]" 
+
+    if(type=='Android'):
+        pattern = r"\d{2}/\d{2}/\d{2}, \d{1,2}:\d{2}\s?[ap]m\s-\s"
+
     messages = re.split(pattern,data)[1:]
     dates = re.findall(pattern,data)
+    dates = [date.replace("\u202f", " ") for date in dates]
     df = pd.DataFrame({'user_message':messages , 'message_date':dates})
 
     # convert message_date type
-    df['message_date'] = df['message_date'].str.strip("[]")
-    df['message_date'] = pd.to_datetime(df['message_date'], format="%d/%m/%y, %I:%M:%S %p")
+
+    if(type=='IOS'):
+        df['message_date'] = df['message_date'].str.strip("[]")
+        df['message_date'] = pd.to_datetime(df['message_date'], format="%d/%m/%y, %I:%M:%S %p")
+    else :
+        df['user_message'] = df['user_message'].str.lstrip('- ')
+        df['message_date'] = pd.to_datetime(df['message_date'], format="%d/%m/%y, %I:%M %p - ")
 
     df.rename(columns={'message_date': 'date'} , inplace=True)
     users = []

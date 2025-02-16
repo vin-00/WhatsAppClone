@@ -7,17 +7,19 @@ from collections import Counter
 import random
 
 st.sidebar.title("Whatsapp Chat Analyzer")
-uploaded_file = st.sidebar.file_uploader("Choose a file")
+
+uploaded_file = st.sidebar.file_uploader("Choose a file" , key='uploaded_file')
 
 if uploaded_file is not None :
     bytes_data= uploaded_file.getvalue()
     data = bytes_data.decode("utf-8")
-    df = preprocessor.preprocess(data)
+    df = preprocessor.preprocess(data )
 
     # Fetch Unique users
     user_list = df['user'].unique().tolist()
     
     group_name = "-1"
+    
     if(len(user_list)>2):
         group_name = user_list.pop(0)
     
