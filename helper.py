@@ -61,6 +61,10 @@ def create_word_cloud(selected_user,df):
         return " ".join(y)
 
     df['message'].apply(remove_stop_words)
+
+    if(df['message'].empty):
+        return "Empty"
+    
     df_wc = wc.generate(df['message'].str.cat(sep=" "))
     return df_wc
 
@@ -77,7 +81,6 @@ def most_common_words(selected_user , df):
             if word not in stop_words:
                 words.append(word)
     most_used = pd.DataFrame(Counter(words).most_common(20))
-    
     return most_used
 
 def emoji_helper(selected_user,df):

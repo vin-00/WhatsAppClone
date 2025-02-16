@@ -255,58 +255,50 @@ if uploaded_file is not None :
         st.title("Word Cloud")
 
         df_wc = helper.create_word_cloud(selected_user,df)
-        fig,ax = plt.subplots()
-        ax.imshow(df_wc)
-        ax.axis("off")
-        st.pyplot(fig) 
+
+        if(df_wc=='Empty'):
+            st.write("Not Enough Words to create Word Cloud")
+        
+        else:
+            fig,ax = plt.subplots()
+            ax.imshow(df_wc)
+            ax.axis("off")
+            st.pyplot(fig) 
 
         # Most Common words
         st.title("Most Used Words")
         most_common_df = helper.most_common_words(selected_user,df)
 
-        fig , ax = plt.subplots()
+        if(len(most_common_df)==0):
+            st.write("Not enough words")
+        else:
+            fig , ax = plt.subplots()
 
-        # Styling the graph 
-        fig.patch.set_facecolor("#0E1117")  # Set entire figure background to black
-        ax.set_facecolor("#0E1117")
-        sns.barplot(y=most_common_df[0],x=most_common_df[1],hue=most_common_df[0], ax=ax,palette='viridis',legend=False)
+            # Styling the graph 
+            fig.patch.set_facecolor("#0E1117")  # Set entire figure background to black
+            ax.set_facecolor("#0E1117")
+            sns.barplot(y=most_common_df[0],x=most_common_df[1],hue=most_common_df[0], ax=ax,palette='viridis',legend=False)
 
-        ax.set_xlabel("")
-        ax.set_ylabel("")
-        plt.xticks(rotation='vertical')
-        ax.tick_params(colors="white")  
-        ax.xaxis.label.set_color("white")  # X-axis label color
-        ax.yaxis.label.set_color("white")  # Y-axis label color
-        ax.spines["bottom"].set_color("white")  
-        ax.spines["left"].set_color("white")
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
+            ax.set_xlabel("")
+            ax.set_ylabel("")
+            plt.xticks(rotation='vertical')
+            ax.tick_params(colors="white")  
+            ax.xaxis.label.set_color("white")  # X-axis label color
+            ax.yaxis.label.set_color("white")  # Y-axis label color
+            ax.spines["bottom"].set_color("white")  
+            ax.spines["left"].set_color("white")
+            ax.spines["top"].set_visible(False)
+            ax.spines["right"].set_visible(False)
 
-        st.pyplot(fig) 
+            st.pyplot(fig) 
 
         # Emoji Analysis
 
         emoji_df = helper.emoji_helper(selected_user,df)
         st.title("Emoji Analysis")
-        
-        # col1 , col2 = st.columns(2)
-
-        # with col1 :
-            
-        #     colors = sns.color_palette("magma", len(emoji_df))
-        #     fig, ax = plt.subplots(facecolor="#0E1117")
-        #     fig.patch.set_facecolor("#0E1117")
-        #     ax.set_facecolor("#0E1117")
-        #     ax.pie(emoji_df[1],labels =emoji_df[0],autopct="%0.2f", startangle=140 ,colors = colors ,textprops={"color":"white"})
-        #     st.pyplot(fig)
-
-        # with col2 :
-        #     st.dataframe(emoji_df)
-        
-        
 
         if(len(emoji_df)==0):
-            st.title("No emojis present")
+            st.write("No emojis present")
         
         else:
             size = 150  
